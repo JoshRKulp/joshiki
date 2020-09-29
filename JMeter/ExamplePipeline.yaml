@@ -1,0 +1,120 @@
+# Documentation at : https://aka.ms/yaml
+
+name: $(Date:yyyyMMdd).$(Rev:r)
+trigger: none
+pr: none
+# schedules:
+#   - cron: "0 8 * * *"
+#     displayName: Nightly Build
+#     always: true
+#     branches:
+#       include:
+#       - develop
+variables:
+  AKSClusterName: 'NFT-Anaheim-Aks-3'
+  AKSClusterResourceGroup: 'nft-aks-anaheim'
+  AzureSub: 'JMeter-NFT-Playground'
+  K8SNameSpace: 'jmeter'
+  ResultsFolder: '$(build.artifactstagingdirectory)/Results/loadtestresults'
+  PathToTest: '../ReferenceArchitectures/ReferenceArchitecture-LightCommercial.jmx'
+  JMeterRedisVariable: redis-release-master
+  JMUserPropertiesFile: '../user.properties'
+  PathToFrag: '../TestFragments'
+  PathToRedisScript: '../redis.txt'
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+- task: CopyFiles@2
+  displayName: 'Copy Files to $(build.artifactstagingdirectory)/k8sjmeter'
+  inputs:
+    SourceFolder: 'ReferenceArchitectures'
+    Contents: '**'
+    TargetFolder: '$(build.artifactstagingdirectory)/k8sjmeter'
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact drop'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
+    publishLocation: 'Container'
+- task: HelmInstaller@1
+  displayName: 'Install Helm 2.14.1'
+  inputs:
+    helmVersionToInstall: '2.14.1'
+- task: UseDotNet@2
+  displayName: 'Use .NET Core SDK 3.x'
+  inputs:
+    packageType: 'sdk'
+    version: '3.x'
+- task: AzureCLI@2
+  displayName: 'Get K8S credentials'
+  inputs:
+    azureSubscription: '$(AzureSub)'
+    scriptType: 'ps'
+    scriptLocation: 'inlineScript'
+    inlineScript: 'az aks get-credentials --resource-group $(AKSClusterResourceGroup) --name $(AKSClusterName)'
+
+# A Kubernetes Secret is required for downstream
+- task: AzurePowerShell@5
+  displayName: 'Create Cluster'
+  inputs:
+    azureSubscription: '$(AzureSub)'
+    ScriptType: 'FilePath'
+    ScriptPath: 'K8s/jmeter_cluster_create.ps1'
+    ScriptArguments: '-tenant $(K8SNameSpace) -ScaleSlaves $(JmeterInjectors)'
+    azurePowerShellVersion: 'LatestVersion'
+
+- task: AzurePowerShell@5
+  displayName: 'Run Test'
+  condition: succeededOrFailed()
+  inputs:
+    azureSubscription: '$(AzureSub)'
+    ScriptType: 'FilePath'
+    ScriptPath: 'K8s/run_test.ps1'
+    ScriptArguments: >
+      -tenant $(K8SNameSpace)
+      -FragFolder $(PathToFrag)
+      -TestName $(PathToTest)
+      -ReportFolder loadtestresults
+    azurePowerShellVersion: 'LatestVersion'
+- task: CopyFiles@2
+  displayName: 'Copy Files to $(build.artifactstagingdirectory)/results'
+  condition: succeededOrFailed()
+  inputs:
+    SourceFolder: 'K8s'
+    Contents: '**/loadtestresults/**'
+    TargetFolder: '$(build.artifactstagingdirectory)/results'
+    OverWrite: true
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact Test Results'
+  condition: succeededOrFailed()
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)/results'
+    ArtifactName: 'Results'
+    publishLocation: 'Container'
+- task: a8515ec8-7254-4ffd-912c-86772e2b5962@3
+  displayName: 'Replace Tokens in appsettings.json'
+  condition: succeededOrFailed()
+  inputs:
+    rootDirectory: 'UnitTest/NFTUnitTestProject'
+    targetFiles: 'appsettings.json'
+    encoding: 'auto'
+    writeBOM: true
+    actionOnMissing: 'warn'
+    keepToken: false
+    tokenPrefix: '__'
+    tokenSuffix: '__'
+- task: DotNetCoreCLI@2
+  displayName: 'Restore project dependencies'
+  inputs:
+    command: 'restore'
+    projects: 'UnitTest/NFTUnitTestProject/*.csproj'
+- task: DotNetCoreCLI@2
+  displayName: Run Unit Test
+  continueOnError: true
+  inputs:
+    command: 'test'
+    testRunTitle: Persona Unit Tests
+    projects: 'UnitTest/NFTUnitTestProject/*.csproj'
+    publishTestResults: true
