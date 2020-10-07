@@ -1,0 +1,12 @@
+FROM ##ACR##jmeter-base:latest
+MAINTAINER ODH
+
+ARG JMETER_VERSION=5.2.1
+
+ENV JMETER_VERSION=5.2.1
+
+COPY rmi_keystore.jks /jmeter/apache-jmeter-$JMETER_VERSION/bin/
+
+COPY rmi_keystore.jks /                     
+
+EXPOSE 1099 50000

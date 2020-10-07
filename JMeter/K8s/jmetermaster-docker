@@ -1,0 +1,20 @@
+FROM ##ACR##jmeter-base:latest
+MAINTAINER ODH
+
+ARG JMETER_VERSION=5.2.1
+
+ENV JVM_ARGS="-Xms5144m -Xmx5144m"
+
+COPY rmi_keystore.jks /jmeter/apache-jmeter-$JMETER_VERSION/bin/
+
+COPY rmi_keystore.jks /
+
+COPY load_test_run /
+
+RUN echo "\r\nslave-machine=false" >> /jmeter/apache-jmeter-$JMETER_VERSION/bin/user.properties
+
+RUN mkdir /report
+
+RUN ["chmod","777","load_test_run"]
+
+EXPOSE 60000-60200
