@@ -5666,11 +5666,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\jkulp\\source\\repos\\ODH_UnitTesting\\ODH_UnitTesting\\ODH_UnitTesting.csproj",
+      "projectUniqueName": "C:\\Users\\jkulp\\source\\repos\\joshiki\\UnitTest\\ODH_UnitTesting\\ODH_UnitTesting\\ODH_UnitTesting.csproj",
       "projectName": "ODH_UnitTesting",
-      "projectPath": "C:\\Users\\jkulp\\source\\repos\\ODH_UnitTesting\\ODH_UnitTesting\\ODH_UnitTesting.csproj",
+      "projectPath": "C:\\Users\\jkulp\\source\\repos\\joshiki\\UnitTest\\ODH_UnitTesting\\ODH_UnitTesting\\ODH_UnitTesting.csproj",
       "packagesPath": "C:\\Users\\jkulp\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\jkulp\\source\\repos\\ODH_UnitTesting\\ODH_UnitTesting\\obj\\",
+      "outputPath": "C:\\Users\\jkulp\\source\\repos\\joshiki\\UnitTest\\ODH_UnitTesting\\ODH_UnitTesting\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Microsoft\\Xamarin\\NuGet\\",
