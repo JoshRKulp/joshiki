@@ -36,55 +36,13 @@ namespace ODH_UnitTesting
         }
 
         [TestMethod]
-        [TestCategory("E Forms")]
-        public void EFormSubmit()
+        public void TotalTest()
         {
-            checkResults( "eForm Submit" );
+            foreach (var result in _resultSet)
+            {
+                checkResults(result.Transaction,12,10000);
+            }
         }
-
-        [TestMethod]
-        [TestCategory("E Forms")]
-        public void GetStateCodes181()
-        {
-            checkResults("/Barcode/GetStateCodes-181");
-        }
-
-        [TestMethod]
-        [TestCategory("E Forms")]
-        public void GetStateCodes182()
-        {
-            checkResults("/Barcode/GetStateCodes-182");
-        }
-
-        [TestMethod]
-        [TestCategory("E Forms")]
-        public void Auth180()
-        {
-            checkResults("/Barcode/Auth-180");
-        }
-
-        [TestMethod]
-        [TestCategory("E Forms")]
-        public void Auth1801()
-        {
-            checkResults("/Barcode/Auth-180-1");
-        }
-
-        [TestMethod]
-        [TestCategory("E Forms")]
-        public void Auth1800()
-        {
-            checkResults("/Barcode/Auth-180-0");
-        }
-
-        [TestMethod]
-        [TestCategory("E Forms")]
-        public void ohid70()
-        {
-            checkResults("/wps/portal/gov/ohid-7-0");
-        }
-
-
 
         public void checkResults(string title, int errorPct = 10, int meanResTime = 1000)
         {
